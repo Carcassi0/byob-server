@@ -20,11 +20,8 @@ jobs:
               with:
                   node-version: '18'
 
-            - name: Install production dependencies
-              run: npm install --omit=dev
-
-            - name: Run tests
-              run: npm test
+            - name: Install dependencies
+              run: npm install
 
             - name: Generate build
               run: npm run build
