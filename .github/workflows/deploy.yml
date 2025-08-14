@@ -1,0 +1,44 @@
+name: Deploy to Elastic Beanstalk
+
+on:
+    push:
+        branches:
+            - main # main 브랜치에 push될 때만 실행됩니다.
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+
+        steps:
+            - name: Checkout source code
+              uses: actions/checkout@v3
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v3
+              with:
+                  node-version: '18'
+
+            - name: Install production dependencies
+              run: npm install --omit=dev
+
+            - name: Run tests
+              run: npm test
+
+            - name: Generate build
+              run: npm run build
+
+            - name: Generate deployment package
+              run: zip -r deploy.zip dist package.json package-lock.json
+
+            - name: Deploy to Elastic Beanstalk
+              uses: einaregilsson/beanstalk-deploy@v21
+              with:
+                  aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  application_name: byob-server
+                  environment_name: Byob-server-env
+                  region: ap-northeast-2
+                  deployment_package: deploy.zip
+                  version_label: ${{ github.sha }}
